@@ -33,6 +33,7 @@
     text-shadow: 0 0 8px rgba(122,193,66,.9), 0 0 22px rgba(122,193,66,.6); }
   .logo-neon em { font-style: normal; color: var(--verde); }
   .espacio { flex: 1; }
+  .portada-movil { display: none; }
   .redondo { width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.06); color: var(--texto);
     cursor: pointer; display: flex; align-items: center; justify-content: center; flex: none; }
   .pildora { height: 40px; padding: 0 14px; border-radius: 20px; border: 1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.06); color: var(--texto);
@@ -136,7 +137,9 @@
     .icono .caja { width: 72px; height: 72px; border-radius: 12px; }
     .icono.foco .caja { width: 96px; height: 96px; border-radius: 14px; }
     .icono span { font-size: 12px; } .icono.foco span { font-size: 12px; }
-    section.detalle { margin-top: auto; gap: 10px; padding-top: 18vh; }
+    .portada-movil { display: block; position: relative; flex: 1 1 0; min-height: 150px; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,.14); box-shadow: 0 14px 40px rgba(0,0,0,.5); }
+    .portada-movil img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+    section.detalle { margin-top: 0; gap: 10px; padding-top: 0; }
     .detalle h1 { font-size: 34px; line-height: 1.05; }
     .etiqueta { font-size: 11px; }
     .acciones { flex-direction: column; gap: 10px; margin-top: 6px; }
@@ -175,6 +178,7 @@
 </header>
 
 <nav class="juegos" id="juegos" aria-label="Juegos"></nav>
+<div class="portada-movil" aria-hidden="true"><img id="portadaImg" alt=""></div>
 
 <section class="detalle" aria-live="polite">
   <div class="etiqueta" id="etiqueta"></div>
@@ -310,7 +314,7 @@ function haceCuanto(seg) {
 function historial() { try { return JSON.parse(leer("historial", "{}")) || {}; } catch (e) { return {}; } }
 function pintarDetalle() {
   const g = JUEGOS[sel]; if (!g) return;
-  cambiarFondo(g.portada);
+  cambiarFondo(g.portada); $("portadaImg").src = g.portada;
   const h = historial(), ultimo = Object.entries(h).sort((a, b) => b[1] - a[1])[0];
   $("etiqueta").textContent = ultimo && ultimo[0] === g.nombre ? t("seguir") : t("juego");
   $("titulo").textContent = g.nombre;
