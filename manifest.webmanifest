@@ -1,0 +1,14 @@
+{
+  "name": "Juegos Nilson MM",
+  "short_name": "Juegos NM",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#050806",
+  "theme_color": "#050806",
+  "icons": [
+    { "src": "img/icono192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "img/icono512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
