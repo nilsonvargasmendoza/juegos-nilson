@@ -228,6 +228,11 @@ const JUEGOS = [
 const $ = (id) => document.getElementById(id);
 const esMovil = () => matchMedia("(max-width: 900px)").matches;
 let estado = {}, novedades = [], sel = 0;
+// novedades fijas de la web (siempre arriba, sin links)
+const NOV_FIJAS = [
+  { es: { juego: "Wild Ones", titulo: "Próximamente", texto: "Un nuevo juego llega pronto." },
+    en: { juego: "Wild Ones", titulo: "Coming soon", texto: "A new game is coming soon." } },
+];
 const guardar = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
 const leer = (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } };
 
@@ -344,8 +349,9 @@ function pintarDetalle() {
 function pintarNovedades() {
   $("novTit").textContent = t("nov");
   const lista = $("listaNov");
-  if (!novedades.length) { const d = document.createElement("div"); d.className = "nov"; const p = document.createElement("p"); p.textContent = t("sinNov"); d.append(p); lista.replaceChildren(d); return; }
-  lista.replaceChildren(...novedades.slice(0, 6).map((n) => {
+  const todas = NOV_FIJAS.map((n) => n[idioma] || n.es).concat(novedades);
+  if (!todas.length) { const d = document.createElement("div"); d.className = "nov"; const p = document.createElement("p"); p.textContent = t("sinNov"); d.append(p); lista.replaceChildren(d); return; }
+  lista.replaceChildren(...todas.slice(0, 6).map((n) => {
     const a = document.createElement("article"); a.className = "nov";
     const sm = document.createElement("small"); sm.textContent = [n.juego, n.fecha].filter(Boolean).join(" · ");
     const b = document.createElement("b"); b.textContent = n.titulo || ""; a.append(sm, b);
