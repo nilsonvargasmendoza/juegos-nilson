@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#050806">
-<meta name="description" content="Juegos Nilson MM: Empires & Allies y CityVille. Juega en el navegador, en tu PC o en tu celular.">
+<meta name="description" content="Juegos Nilson MM: Empires & Allies, CityVille y Wild Ones. Juega en el navegador, en tu PC o en tu celular.">
 <title>Juegos Nilson MM</title>
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" type="image/png" href="img/icono64.png">
@@ -51,7 +51,10 @@
   .icono { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; cursor: pointer; opacity: .78; transition: opacity .2s; background: none; border: 0; color: inherit; padding: 0; }
   .icono .caja { width: 104px; height: 104px; border-radius: 14px; overflow: hidden; border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.06);
     display: flex; align-items: center; justify-content: center; transition: width .25s, height .25s, box-shadow .25s, border-color .25s; }
+  .icono .caja { position: relative; }
   .icono .caja img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+  .icono .nuevo { position: absolute; left: 6px; top: 6px; font-style: normal; font-size: 10px; font-weight: 800; letter-spacing: 1px; padding: 3px 6px; border-radius: 4px;
+    background: var(--oro); color: #1a1205; box-shadow: 0 2px 8px rgba(0,0,0,.5); }
   .icono span { font-size: 13px; color: #c4cdc3; }
   .icono.foco { opacity: 1; }
   .icono.foco .caja { width: 150px; height: 150px; border: 3px solid var(--verde); box-shadow: 0 0 0 4px rgba(122,193,66,.25), 0 18px 40px rgba(0,0,0,.6); }
@@ -224,14 +227,17 @@ const JUEGOS = [
     pc: "https://www.mediafire.com/file/oy4kft7yiwx88q5/CityVille-Latino-PC-Flash.zip/file",
     apk: "https://www.mediafire.com/file/h4gwv58j9bq5av8/CityVille-Latino-Flash.apk/file",
     ping: "https://cityvillelatino.tail81378e.ts.net/favicon.ico", claves: ["cityville_pc", "cityville_apk"] },
+  { nombre: "Wild Ones", portada: "img/wildones.png", nuevo: true,
+    web: "https://wildones.empireslatam.com/juego",
+    ping: "https://wildones.empireslatam.com/img/logo.png", claves: [] },
 ];
 const $ = (id) => document.getElementById(id);
 const esMovil = () => matchMedia("(max-width: 900px)").matches;
 let estado = {}, novedades = [], sel = 0;
 // novedades fijas de la web (siempre arriba, sin links)
 const NOV_FIJAS = [
-  { es: { juego: "Wild Ones", titulo: "Próximamente", texto: "Un nuevo juego llega pronto." },
-    en: { juego: "Wild Ones", titulo: "Coming soon", texto: "A new game is coming soon." } },
+  { es: { juego: "Wild Ones", titulo: "¡Ya disponible!", texto: "Nuevo juego: entra y juega en el navegador." },
+    en: { juego: "Wild Ones", titulo: "Now available!", texto: "New game: jump in and play in the browser." } },
 ];
 const guardar = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
 const leer = (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } };
@@ -247,7 +253,7 @@ const TXT = {
         sonidoOn: "Silenciar sonidos", sonidoOff: "Activar sonidos", idiomaBtn: "EN", idiomaTit: "Switch to English",
         toastOn: (j) => ["Servidor encendido", j + " ya se puede jugar"], toastOff: (j) => ["Servidor apagado", j + " no está disponible por ahora"],
         notaApagado: "Prueba más tarde o avísale a Nilson", notaWeb: "Funciona en PC y celular, sin instalar nada", conectado: "Conectado", sinRed: "Sin internet", hola: (n) => "¡Hola, " + n + "!", momento: "hace un momento",
-        abriendo: "Abriendo…", noPermitido: "Desactivado por ahora" },
+        abriendo: "Abriendo…", noPermitido: "Desactivado por ahora", nuevo: "NUEVO" },
   en: { seguir: "CONTINUE PLAYING", juego: "GAME", web: "▶ Play in the browser", pc: "Download for PC", apk: "Download Android app",
         on: "Server online", off: "Server offline", mant: "Under maintenance", revisando: "Checking server…", jugando: (n) => n + " playing now",
         hace: (t) => "Played " + t, nov: "NEWS", sinNov: "No news for now.",
@@ -256,7 +262,7 @@ const TXT = {
         sonidoOn: "Mute sounds", sonidoOff: "Turn sounds on", idiomaBtn: "ES", idiomaTit: "Cambiar a español",
         toastOn: (j) => ["Server online", j + " is ready to play"], toastOff: (j) => ["Server offline", j + " is not available right now"],
         notaApagado: "Try again later or let Nilson know", notaWeb: "Works on PC and phone, nothing to install", conectado: "Connected", sinRed: "Offline", hola: (n) => "Hi, " + n + "!", momento: "a moment ago",
-        abriendo: "Opening…", noPermitido: "Disabled for now" },
+        abriendo: "Opening…", noPermitido: "Disabled for now", nuevo: "NEW" },
 };
 const t = (k, ...a) => { const v = TXT[idioma][k]; return typeof v === "function" ? v(...a) : v; };
 
@@ -288,7 +294,7 @@ async function revisar() {
         const e = await r.json();
         Object.assign(info, { encendido: true, jugando: e.jugando, mantenimiento: !!e.mantenimiento, permitido: e.permitido || info.permitido });
         for (const n of (e.novedades || [])) nov.push(n);
-        if (e.links) for (const j of JUEGOS) { const [kpc, kapk] = j.claves; if (e.links[kpc]) j.pc = e.links[kpc]; if (e.links[kapk]) j.apk = e.links[kapk]; }
+        if (e.links) for (const j of JUEGOS) { const [kpc, kapk] = j.claves || []; if (e.links[kpc]) j.pc = e.links[kpc]; if (e.links[kapk]) j.apk = e.links[kapk]; }
       } catch (x) { info.encendido = false; }
     } else if (g.ping) info.encendido = await ping(g.ping);
     nuevo[g.nombre] = info;
@@ -309,6 +315,7 @@ function pintar() {
   $("juegos").replaceChildren(...JUEGOS.map((g, i) => {
     const b = document.createElement("button"); b.type = "button"; b.className = "icono" + (i === sel ? " foco" : "");
     b.innerHTML = '<div class="caja"><img alt=""></div><span></span>'; b.querySelector("img").src = g.portada; b.lastChild.textContent = g.nombre;
+    if (g.nuevo) { const n = document.createElement("i"); n.className = "nuevo"; n.textContent = t("nuevo"); b.firstChild.append(n); }
     b.setAttribute("aria-pressed", i === sel ? "true" : "false");
     b.onclick = () => { if (sel !== i) { sel = i; sMover(); guardar("juegoSel", g.nombre); pintar(); } };
     return b;
@@ -342,8 +349,8 @@ function pintarDetalle() {
     acc.append(a);
   };
   enlace(esc(t("web")), "principal" + (apagado || !perm.web ? " apagada" : ""), g.web, true);
-  if (!esMovil()) enlace('<span class="insignia pc">PC</span>' + esc(t("pc")), perm.pc ? "" : "apagada", g.pc, false);
-  enlace('<span class="insignia apk">APK</span>' + esc(t("apk")), perm.apk ? "" : "apagada", g.apk, false);
+  if (g.pc && !esMovil()) enlace('<span class="insignia pc">PC</span>' + esc(t("pc")), perm.pc ? "" : "apagada", g.pc, false);
+  if (g.apk) enlace('<span class="insignia apk">APK</span>' + esc(t("apk")), perm.apk ? "" : "apagada", g.apk, false);
   $("nota").textContent = apagado ? t("notaApagado") : t("notaWeb");
 }
 function pintarNovedades() {
